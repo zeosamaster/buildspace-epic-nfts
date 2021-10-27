@@ -40,6 +40,8 @@ contract MyEpicNFT is ERC721URIStorage {
         "Haaland"
     ];
 
+    event NewEpicNFTMinted(address sender, uint256 tokenId);
+
     constructor() ERC721("SquareNFT", "SQUARE") {
         console.log("WAGMI!");
     }
@@ -112,6 +114,8 @@ contract MyEpicNFT is ERC721URIStorage {
         _safeMint(msg.sender, newItemId);
 
         _setTokenURI(newItemId, finalTokenUri);
+
+        emit NewEpicNFTMinted(msg.sender, newItemId);
 
         _tokenIds.increment();
 
