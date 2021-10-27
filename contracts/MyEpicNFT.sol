@@ -12,8 +12,12 @@ contract MyEpicNFT is ERC721URIStorage {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
 
-    string baseSvg =
-        "<svg xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='xMinYMin meet' viewBox='0 0 350 350'><style>.base { fill: white; font-family: serif; font-size: 24px; }</style><rect width='100%' height='100%' fill='black' /><text x='50%' y='50%' class='base' dominant-baseline='middle' text-anchor='middle'>";
+    string svgPartOne =
+        "<svg xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='xMinYMin meet' viewBox='0 0 350 350'><style>.base { fill: white; font-family: serif; font-size: 24px; }</style><rect width='100%' height='100%' fill='";
+    string svgPartTwo =
+        "'/><text x='50%' y='50%' class='base' dominant-baseline='middle' text-anchor='middle'>";
+
+    string[] colors = ["red", "#08C2A8", "black", "orange", "blue", "green"];
 
     string[] firstWords = [
         "Cristiano",
@@ -50,6 +54,18 @@ contract MyEpicNFT is ERC721URIStorage {
         return uint256(keccak256(abi.encodePacked(input)));
     }
 
+    function pickRandomColor(uint256 tokenId)
+        public
+        view
+        returns (string memory)
+    {
+        uint256 rand = random(
+            string(abi.encodePacked("RANDOM_COLOR", Strings.toString(tokenId)))
+        );
+
+        return colors[rand % colors.length];
+    }
+
     function pickRandomWord(uint256 tokenId, uint256 collectionNum)
         public
         view
@@ -78,6 +94,8 @@ contract MyEpicNFT is ERC721URIStorage {
     function makeAnEpicNFT() public {
         uint256 newItemId = _tokenIds.current();
 
+        string memory randomColor = pickRandomColor(newItemId);
+
         string memory first = pickRandomWord(newItemId, 1);
         string memory second = pickRandomWord(newItemId, 2);
         string memory third = pickRandomWord(newItemId, 3);
@@ -86,7 +104,13 @@ contract MyEpicNFT is ERC721URIStorage {
         );
 
         string memory finalSvg = string(
-            abi.encodePacked(baseSvg, combinedWord, "</text></svg>")
+            abi.encodePacked(
+                svgPartOne,
+                randomColor,
+                svgPartTwo,
+                combinedWord,
+                "</text></svg>"
+            )
         );
 
         string memory json = Base64.encode(
