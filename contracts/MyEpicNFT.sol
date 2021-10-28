@@ -12,6 +12,8 @@ contract MyEpicNFT is ERC721URIStorage {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
 
+    uint256 maxMintedNFTs = 50;
+
     string svgPartOne =
         "<svg xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='xMinYMin meet' viewBox='0 0 350 350'><style>.base { fill: white; font-family: serif; font-size: 24px; }</style><rect width='100%' height='100%' fill='";
     string svgPartTwo =
@@ -44,7 +46,11 @@ contract MyEpicNFT is ERC721URIStorage {
         "Haaland"
     ];
 
-    event NewEpicNFTMinted(address sender, uint256 tokenId);
+    event NewEpicNFTMinted(
+        address sender,
+        uint256 tokenId,
+        uint256 totalNFTsMintedSoFar
+    );
 
     constructor() ERC721("SquareNFT", "SQUARE") {
         console.log("WAGMI!");
@@ -91,8 +97,13 @@ contract MyEpicNFT is ERC721URIStorage {
         return collection[rand];
     }
 
+    function getNFTsStats() public view returns (uint256 current, uint256 max) {
+        return (_tokenIds.current(), maxMintedNFTs);
+    }
+
     function makeAnEpicNFT() public {
         uint256 newItemId = _tokenIds.current();
+        require(newItemId < maxMintedNFTs);
 
         string memory randomColor = pickRandomColor(newItemId);
 
@@ -139,14 +150,15 @@ contract MyEpicNFT is ERC721URIStorage {
 
         _setTokenURI(newItemId, finalTokenUri);
 
-        emit NewEpicNFTMinted(msg.sender, newItemId);
-
         _tokenIds.increment();
 
+        emit NewEpicNFTMinted(msg.sender, newItemId, _tokenIds.current());
+
         console.log(
-            "An NFT w/ ID %s has been minted to %s",
+            "An NFT w/ ID %s has been minted to %s. Total minted: %s",
             newItemId,
-            msg.sender
+            msg.sender,
+            _tokenIds.current()
         );
     }
 }
