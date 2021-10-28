@@ -19,31 +19,70 @@ contract MyEpicNFT is ERC721URIStorage {
     string svgPartTwo =
         "'/><text x='50%' y='50%' class='base' dominant-baseline='middle' text-anchor='middle'>";
 
-    string[] colors = ["red", "#08C2A8", "black", "orange", "blue", "green"];
+    string[] colors = [
+        "#cc0033",
+        "#98c5e9",
+        "#d3171e",
+        "#0a4595",
+        "#a40047",
+        "#1a2b4c",
+        "#00519e",
+        "#272727",
+        "#d20222",
+        "#eb1a47",
+        "#c9282d",
+        "#a71d36",
+        "#0f204b",
+        "#ff0000",
+        "#0099dd",
+        "#202124",
+        "#c5031b",
+        "#f45b1a",
+        "#bc0505",
+        "#fd0000",
+        "#005FAB",
+        "#011F68",
+        "#011F68",
+        "#011F68",
+        "#011F68",
+        "#c00001",
+        "#cc0000",
+        "#60B8E2",
+        "#005039",
+        "#3375B3"
+    ];
 
-    string[] firstWords = [
-        "Cristiano",
-        "Lionel",
-        "Robert",
-        "Kevin",
-        "Killian",
-        "Erling"
-    ];
-    string[] secondWords = [
-        "the Champ",
-        "the King",
-        "the Best",
-        "the Golden Boot",
-        "the Golden Boy",
-        "the Finisher"
-    ];
-    string[] thirdWords = [
-        "Ronaldo",
-        "Messi",
-        "Lewandowski",
-        "De Bruyne",
-        "Mbappe",
-        "Haaland"
+    string[] clubs = [
+        "FC Bayern Munchen",
+        "Manchester City FC",
+        "Liverpool FC",
+        "Chelsea FC",
+        "FC Barcelona",
+        "Paris Saint-Germain",
+        "Real Madrid CF",
+        "Juventus",
+        "Manchester United",
+        "Club Atletico de Madrid",
+        "Sevilla FC",
+        "AS Roma",
+        "Tottenham Hotspur",
+        "Arsenal FC",
+        "FC Porto",
+        "Borussia Dortmund",
+        "AFC Ajax",
+        "FC Shakhtar Donetsk",
+        "RB Leipzig",
+        "FC Salzburg",
+        "Villarreal CF",
+        "Olympique Lyonnais",
+        "SSC Napoli",
+        "Atalanta BC",
+        "FC Internazionale Milano",
+        "SL Benfica",
+        "FC Basel 1893",
+        "SS Lazio",
+        "Sporting Clube de Portugal",
+        "FC Zenit"
     ];
 
     event NewEpicNFTMinted(
@@ -52,49 +91,23 @@ contract MyEpicNFT is ERC721URIStorage {
         uint256 totalNFTsMintedSoFar
     );
 
-    constructor() ERC721("SquareNFT", "SQUARE") {
-        console.log("WAGMI!");
-    }
+    constructor() ERC721("ClubsNFT", "CLUBS") {}
 
     function random(string memory input) internal pure returns (uint256) {
         return uint256(keccak256(abi.encodePacked(input)));
     }
 
-    function pickRandomColor(uint256 tokenId)
+    function pickRandomClub(uint256 tokenId)
         public
         view
-        returns (string memory)
+        returns (string memory club, string memory color)
     {
         uint256 rand = random(
-            string(abi.encodePacked("RANDOM_COLOR", Strings.toString(tokenId)))
+            string(abi.encodePacked("RANDOM_WORD", Strings.toString(tokenId)))
         );
 
-        return colors[rand % colors.length];
-    }
-
-    function pickRandomWord(uint256 tokenId, uint256 collectionNum)
-        public
-        view
-        returns (string memory)
-    {
-        uint256 rand = random(
-            string(
-                abi.encodePacked(
-                    "RANDOM_WORD",
-                    Strings.toString(collectionNum),
-                    Strings.toString(tokenId)
-                )
-            )
-        );
-
-        string[] memory collection = (
-            collectionNum == 1 ? firstWords : collectionNum == 2
-                ? secondWords
-                : thirdWords
-        );
-
-        rand = rand % collection.length;
-        return collection[rand];
+        rand = rand % clubs.length;
+        return (clubs[rand], colors[rand]);
     }
 
     function getNFTsStats() public view returns (uint256 current, uint256 max) {
@@ -105,21 +118,14 @@ contract MyEpicNFT is ERC721URIStorage {
         uint256 newItemId = _tokenIds.current();
         require(newItemId < maxMintedNFTs);
 
-        string memory randomColor = pickRandomColor(newItemId);
-
-        string memory first = pickRandomWord(newItemId, 1);
-        string memory second = pickRandomWord(newItemId, 2);
-        string memory third = pickRandomWord(newItemId, 3);
-        string memory combinedWord = string(
-            abi.encodePacked(first, " ", second, " ", third)
-        );
+        (string memory club, string memory color) = pickRandomClub(newItemId);
 
         string memory finalSvg = string(
             abi.encodePacked(
                 svgPartOne,
-                randomColor,
+                color,
                 svgPartTwo,
-                combinedWord,
+                club,
                 "</text></svg>"
             )
         );
@@ -129,7 +135,7 @@ contract MyEpicNFT is ERC721URIStorage {
                 string(
                     abi.encodePacked(
                         '{"name": "',
-                        combinedWord,
+                        club,
                         '", "description": "He shoot, he sprint, but most importantly, he score", "image": "data:image/svg+xml;base64,',
                         Base64.encode(bytes(finalSvg)),
                         '"}'
